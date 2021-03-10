@@ -78,9 +78,7 @@ public class SoccerProblem {
         return actions;
     }
 
-    public SoccerState initial_state(){
-        return soccerState.getState();
-    }
+
 
 
 

@@ -66,11 +66,12 @@ class Brain extends Thread implements SensorInput
 	// first put it somewhere on my side
 	double x = 	-Math.random()*52.5;
 	double y = 34 - Math.random()*68.0;
+
 	if(Pattern.matches("^before_kick_off.*",m_playMode))
 	    m_krislet.move(x,y);
 
 	//LinkedList <Object> result = andOrSearch.and_or_search(problem, initial_state);
-	//object = m_memory.getObject("ball");
+	object = m_memory.getObject("ball");
 
 
 	/*AndOrSearch andOrSearch = new AndOrSearch();
@@ -78,25 +79,60 @@ class Brain extends Thread implements SensorInput
 	SoccerState initial_state = new SoccerState(distance,direction);
     LinkedList <Object> result = andOrSearch.and_or_search(problem,initial_state);*/
 
+	AndOrSearch andOrSearch = new AndOrSearch();
+	SoccerProblem problem = new SoccerProblem();
+	//SoccerState initial_state = new SoccerState(object.m_distance, object.m_direction);
+		SoccerState initial_state;
+	LinkedList <Object> result = new LinkedList<Object>();
+	int initialize_once = 0;
+
 	while( !m_timeOver )
 	{
 		object = m_memory.getObject("ball");
+
+		//LinkedList <Object> result = andOrSearch.and_or_search(problem,initial_state);
+
 
 		if( object == null )
 		{
 			// If you don't know where is ball then find it
 			m_krislet.turn(40);
 			m_memory.waitForNewInfo();
+
+		} else if(initialize_once == 0) {
+				initial_state = new SoccerState(object.m_distance, object.m_direction);
+				result = andOrSearch.and_or_search(problem,initial_state);
+				initialize_once = 1;
 		}
-		AndOrSearch andOrSearch = new AndOrSearch();
-		SoccerProblem problem = new SoccerProblem();
-		SoccerState initial_state = new SoccerState(object.m_distance,object.m_direction);
-		LinkedList <Object> result = andOrSearch.and_or_search(problem,initial_state);
-		Action action = (Action) result.get(0);
+
+
+		/*Action action = (Action) result.get(0);
 		if(action.getAction_type().equals("dash")){
 			m_krislet.dash(action.getArg()* 300 *object.m_distance); //calibrated
 		}else if(action.getAction_type().equals("turn")){
 			m_krislet.turn(object.m_direction);
+		}*/
+
+		if(initialize_once == 1) {
+			for (int i = 0; i < result.size(); i++) {
+				if(result.get(i).getClass() == Action.class){
+					Action action = (Action) result.get(i);
+					if (action.getAction_type().equals("dash")) {
+						m_krislet.dash(action.getArg() * 300 * object.m_distance); //calibrated
+					} else if (action.getAction_type().equals("turn")) {
+						m_krislet.turn(object.m_direction);
+					}
+				}else {
+					StatePlan statePlan = (StatePlan) result.get(i);
+					Action action = (Action) statePlan.plan;
+					SoccerState state = (SoccerState) statePlan.state;
+					if (action.getAction_type().equals("dash")) {
+						m_krislet.dash(action.getArg() * 300 * state.getDistance()); //calibrated
+					} else if (action.getAction_type().equals("turn")) {
+						m_krislet.turn(state.getDirection());
+					}
+				}
+			}
 		}
 		/*object = m_memory.getObject("ball");
 		if( object == null )

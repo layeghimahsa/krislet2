@@ -19,7 +19,7 @@ public class AndOrSearch {
     }
 
     public LinkedList <Object> or_search(SoccerState state, SoccerProblem problem, LinkedList <SoccerState> path){
-        LinkedList <Object> plan = new LinkedList <Object>();
+        LinkedList <LinkedList> plan = new LinkedList <LinkedList>();
         System.out.println("distance in or: "+ state.getDistance()+ ", direction: " + state.getDirection());
         if (problem.testGoal(state)){
             System.out.println("Goal Reached:");
@@ -47,6 +47,7 @@ public class AndOrSearch {
             return null; //failure
         }
 
+        LinkedList <LinkedList> result = new LinkedList <LinkedList>();
 
         for (int i = 0; i < problem.actions(state).size(); i++) {
             path.add(0,state);
@@ -57,7 +58,9 @@ public class AndOrSearch {
             System.out.println("plan : " + plan);
             //System.out.println("action: "+action);
             if (plan != null) {
-                plan.add(0,action);
+
+                result.add(action);
+                plan.add(0,result);
                 return plan;
             }
         }
@@ -67,7 +70,7 @@ public class AndOrSearch {
     }
 
 
-    public LinkedList <Object> and_search(LinkedList <SoccerState> states, SoccerProblem problem, LinkedList <SoccerState> path){
+    public LinkedList <LinkedList> and_search(LinkedList <SoccerState> states, SoccerProblem problem, LinkedList <SoccerState> path){
         LinkedList <Object> plan = new LinkedList <Object>();
         for (int i = 0; i < states.size() ; i++) {
             SoccerState state = states.get(i);
@@ -77,12 +80,21 @@ public class AndOrSearch {
         }
 
         LinkedList <Object> result = new LinkedList <Object>();
+        LinkedList <Object> result_2 = new LinkedList <Object>();
+        LinkedList <LinkedList> result_3 = new LinkedList <LinkedList>();
+
         for (int i = 0; i < states.size(); i++) {
-            StatePlan statePlan = new StatePlan(states.get(i), plan.get(i));
-            result.add(statePlan);
+            //StatePlan statePlan = new StatePlan(states.get(i), plan.get(i));
+            //result.add(statePlan);
+            SoccerState soccerState = new SoccerState(states.get(i).getDistance(),states.get(i).getDirection());
+            result.add(soccerState);
+            result_2.add(plan.get(i));
         }
 
-        return result;
+        result_3.add(result);
+        result_3.add(result_2);
+
+        return result_3;
 
 
 
